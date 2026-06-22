@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
-import { Chrome, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 export default function LoginPage() {
