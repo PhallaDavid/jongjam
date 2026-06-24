@@ -3,13 +3,13 @@ import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, Auth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyC-bEVAGURKHROHtrqEZ2kUTsBxnoiuBZ4",
+  authDomain: "jongjam-1ea29.firebaseapp.com",
+  projectId: "jongjam-1ea29",
+  storageBucket: "jongjam-1ea29.firebasestorage.app",
+  messagingSenderId: "152137871620",
+  appId: "1:152137871620:web:ccb1746decb9e0c3e4a051",
+  measurementId: "G-JQMM13SJJC",
 };
 
 // Check if Firebase is properly configured
