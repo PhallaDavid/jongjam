@@ -1,18 +1,27 @@
 import type { Metadata } from "next";
-import { Outfit, Geist_Mono } from "next/font/google";
+import { Outfit, Geist_Mono, Kantumruy_Pro } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { AuthProvider } from "@/components/auth-provider";
+import { ToastProvider } from "@/components/ui/toast";
+import { LanguageProvider } from "@/components/language-provider";
+import { Footer } from "@/components/ui/footer";
 
 const outfit = Outfit({
-  variable: "--font-sans",
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const kantumruyPro = Kantumruy_Pro({
+  variable: "--font-khmer",
+  subsets: ["khmer"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -28,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${outfit.variable} ${geistMono.variable} ${kantumruyPro.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans">
@@ -39,8 +48,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <NavigationProgress />
-            {children}
+            <LanguageProvider>
+              <ToastProvider>
+                <NavigationProgress />
+                {children}
+                <Footer />
+              </ToastProvider>
+            </LanguageProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -1,8 +1,13 @@
+"use client";
+
 import { Sparkles, FileText, CheckSquare, PenLine, ListTodo, ArrowRight } from "lucide-react";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { Navbar1 } from "@/components/ui/navbar1";
+import { useLanguage } from "@/components/language-provider";
 
 export default function Home() {
+  const { t } = useLanguage();
+
   return (
     <main className="relative min-h-screen">
       {/* Fixed navbar */}
@@ -16,20 +21,20 @@ export default function Home() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-200">
             <Sparkles className="w-3.5 h-3.5 text-violet-500" />
-            Your all-in-one productivity workspace
+            {t("allInOne")}
           </div>
 
           {/* Headline */}
           <div className="flex flex-col gap-3 sm:gap-4 max-w-2xl">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-zinc-900 dark:text-white leading-tight">
-              Think it.{" "}
+              {t("thinkIt")}{" "}
               <span className="bg-gradient-to-r from-violet-500 via-blue-500 to-emerald-400 bg-clip-text text-transparent">
-                Capture&nbsp;it.
+                {t("captureIt")}
               </span>{" "}
-              Do it.
+              {t("doIt")}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-md mx-auto px-2">
-              JongJam combines beautiful note-taking with powerful task management — all in one clean, fast workspace.
+              {t("headlineSub")}
             </p>
           </div>
 
@@ -43,13 +48,13 @@ export default function Home() {
                 <FileText className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
-                <p className="font-bold text-zinc-900 dark:text-white text-sm sm:text-lg">Notes</p>
+                <p className="font-bold text-zinc-900 dark:text-white text-sm sm:text-lg">{t("notesTitle")}</p>
                 <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1 hidden sm:block">
-                  Write, pin, and color-code your ideas. Masonry grid with instant search.
+                  {t("notesDesc")}
                 </p>
               </div>
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400 group-hover:gap-2 transition-all">
-                Open <ArrowRight className="w-3 h-3" />
+                {t("open")} <ArrowRight className="w-3 h-3" />
               </span>
             </a>
 
@@ -61,13 +66,13 @@ export default function Home() {
                 <CheckSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <p className="font-bold text-zinc-900 dark:text-white text-sm sm:text-lg">Tasks</p>
+                <p className="font-bold text-zinc-900 dark:text-white text-sm sm:text-lg">{t("tasksTitle")}</p>
                 <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1 hidden sm:block">
-                  Kanban &amp; list views, priority levels, due dates, and progress tracking.
+                  {t("tasksDesc")}
                 </p>
               </div>
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 group-hover:gap-2 transition-all">
-                Open <ArrowRight className="w-3 h-3" />
+                {t("open")} <ArrowRight className="w-3 h-3" />
               </span>
             </a>
           </div>
@@ -79,19 +84,19 @@ export default function Home() {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 sm:py-3.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-semibold text-sm sm:text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
             >
               <PenLine className="w-4 h-4" />
-              Start Writing
+              {t("startWriting")}
             </a>
             <a
               href="/tasks"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 sm:py-3.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white/30 dark:bg-black/20 backdrop-blur-sm font-medium text-sm sm:text-base text-zinc-700 dark:text-zinc-300 hover:bg-white/50 dark:hover:bg-black/30 transition-all duration-200"
             >
               <ListTodo className="w-4 h-4" />
-              Manage Tasks
+              {t("manageTasks")}
             </a>
           </div>
 
           <p className="text-xs text-zinc-500 dark:text-zinc-500">
-            No account needed&nbsp;•&nbsp;Works offline&nbsp;•&nbsp;Dark mode ready
+            {t("noAccount")}
           </p>
         </div>
       </AuroraBackground>

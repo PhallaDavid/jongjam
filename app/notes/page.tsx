@@ -6,6 +6,9 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { AuthGuard } from "@/components/auth-guard";
 import { useAuth } from "@/components/auth-provider";
+import { useToast } from "@/components/ui/toast";
+import { useLanguage } from "@/components/language-provider";
+import { LanguageToggle } from "@/components/language-toggle";
 import { db } from "@/lib/firebase";
 import {
   collection,
@@ -30,16 +33,27 @@ type Note = {
 };
 
 const NOTE_COLORS = [
-  { label: "Default", bg: "bg-white dark:bg-zinc-800", border: "border-zinc-200 dark:border-zinc-700", value: "default" },
-  { label: "Yellow", bg: "bg-yellow-50 dark:bg-yellow-950/40", border: "border-yellow-200 dark:border-yellow-800", value: "yellow" },
-  { label: "Green", bg: "bg-emerald-50 dark:bg-emerald-950/40", border: "border-emerald-200 dark:border-emerald-800", value: "green" },
-  { label: "Blue", bg: "bg-blue-50 dark:bg-blue-950/40", border: "border-blue-200 dark:border-blue-800", value: "blue" },
-  { label: "Pink", bg: "bg-pink-50 dark:bg-pink-950/40", border: "border-pink-200 dark:border-pink-800", value: "pink" },
-  { label: "Purple", bg: "bg-violet-50 dark:bg-violet-950/40", border: "border-violet-200 dark:border-violet-800", value: "purple" },
+  { bg: "bg-white dark:bg-zinc-800", border: "border-zinc-200 dark:border-zinc-700", value: "default" },
+  { bg: "bg-yellow-50 dark:bg-yellow-950/40", border: "border-yellow-200 dark:border-yellow-800", value: "yellow" },
+  { bg: "bg-emerald-50 dark:bg-emerald-950/40", border: "border-emerald-200 dark:border-emerald-800", value: "green" },
+  { bg: "bg-blue-50 dark:bg-blue-950/40", border: "border-blue-200 dark:border-blue-800", value: "blue" },
+  { bg: "bg-pink-50 dark:bg-pink-950/40", border: "border-pink-200 dark:border-pink-800", value: "pink" },
+  { bg: "bg-violet-50 dark:bg-violet-950/40", border: "border-violet-200 dark:border-violet-800", value: "purple" },
 ];
 
 const getColorClasses = (value: string) => {
   return NOTE_COLORS.find((c) => c.value === value) ?? NOTE_COLORS[0];
+};
+
+const getColorLabel = (value: string, t: any) => {
+  switch (value) {
+    case "yellow": return t("colorYellow");
+    case "green": return t("colorGreen");
+    case "blue": return t("colorBlue");
+    case "pink": return t("colorPink");
+    case "purple": return t("colorPurple");
+    default: return t("colorDefault");
+  }
 };
 
 function NoteCard({
@@ -57,21 +71,22 @@ function NoteCard({
 }) {
   const [showPalette, setShowPalette] = useState(false);
   const color = getColorClasses(note.color);
+  const { t } = useLanguage();
 
   return (
     <div className={`group relative flex flex-col rounded-2xl border ${color.bg} ${color.border} shadow-sm hover:shadow-xl transition-all duration-300 overflow-visible`}>
       <div className="flex items-center gap-2 px-4 pt-4 pb-2">
         <input
-          className="flex-1 bg-transparent font-semibold text-base text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none"
+          className="flex-1 min-w-0 bg-transparent font-semibold text-base text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none"
           value={note.title}
-          placeholder="Title"
+          placeholder={t("titlePlaceholder")}
           onChange={(e) => onUpdate(note.id, "title", e.target.value)}
         />
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
           <button
             onClick={() => onTogglePin(note.id)}
             className={`p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${note.pinned ? "text-amber-500" : "text-zinc-400"}`}
-            title="Pin"
+            title={t("pin")}
           >
             <Pin className="w-4 h-4" />
           </button>
@@ -79,7 +94,7 @@ function NoteCard({
             <button
               onClick={() => setShowPalette((p) => !p)}
               className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-zinc-400 transition-colors"
-              title="Change color"
+              title={t("changeColor")}
             >
               <Palette className="w-4 h-4" />
             </button>
@@ -88,7 +103,7 @@ function NoteCard({
                 {NOTE_COLORS.map((c) => (
                   <button
                     key={c.value}
-                    title={c.label}
+                    title={getColorLabel(c.value, t)}
                     onClick={() => { onColorChange(note.id, c.value); setShowPalette(false); }}
                     className={`w-6 h-6 rounded-full border-2 ${c.bg} ${note.color === c.value ? "border-zinc-700 dark:border-zinc-200" : "border-zinc-300 dark:border-zinc-600"} hover:scale-110 transition-transform`}
                   />
@@ -99,7 +114,7 @@ function NoteCard({
           <button
             onClick={() => onDelete(note.id)}
             className="p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-950/40 text-zinc-400 hover:text-red-500 transition-colors"
-            title="Delete"
+            title={t("delete")}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -109,12 +124,12 @@ function NoteCard({
       <textarea
         className="flex-1 resize-none bg-transparent px-4 pb-4 text-sm text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none min-h-[100px]"
         value={note.content}
-        placeholder="Write your note here..."
+        placeholder={t("writeNoteHere")}
         onChange={(e) => onUpdate(note.id, "content", e.target.value)}
       />
 
       <div className="px-4 pb-3 text-[10px] text-zinc-400 dark:text-zinc-600">
-        {note.pinned && <span className="text-amber-500 font-semibold mr-2">📌 Pinned</span>}
+        {note.pinned && <span className="text-amber-500 font-semibold mr-2">📌 {t("pinned")}</span>}
         {note.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
       </div>
     </div>
@@ -122,6 +137,7 @@ function NoteCard({
 }
 
 function NewNoteInput({ onCreate }: { onCreate: (title: string, content: string) => void }) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -147,7 +163,7 @@ function NewNoteInput({ onCreate }: { onCreate: (title: string, content: string)
           <input
             autoFocus
             className="w-full bg-transparent px-5 pt-4 pb-1 font-semibold text-base text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none"
-            placeholder="Title"
+            placeholder={t("titlePlaceholder")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -155,7 +171,7 @@ function NewNoteInput({ onCreate }: { onCreate: (title: string, content: string)
         <div className="flex items-center gap-3 px-5 py-3">
           <input
             className="flex-1 bg-transparent text-sm text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-500 outline-none"
-            placeholder="Take a note..."
+            placeholder={t("takeNote")}
             onFocus={() => setExpanded(true)}
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -171,10 +187,10 @@ function NewNoteInput({ onCreate }: { onCreate: (title: string, content: string)
                 if (title.trim() || content.trim()) onCreate(title, content);
                 setExpanded(false); setTitle(""); setContent("");
               }}
-              className="flex items-center gap-1 text-xs font-semibold px-4 py-1.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-80 transition-opacity"
+              className="flex items-center gap-1 text-xs font-semibold px-4 py-1.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-80 transition-opacity cursor-pointer"
             >
               <Check className="w-3.5 h-3.5" />
-              Done
+              {t("done")}
             </button>
           )}
         </div>
@@ -188,6 +204,8 @@ export default function NotesApp() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { success, error } = useToast();
+  const { t } = useLanguage();
 
   // Real-time Firestore listener
   useEffect(() => {
@@ -244,20 +262,33 @@ export default function NotesApp() {
         createdAt: serverTimestamp(),
       });
       console.log("addDoc SUCCESS! ID:", docRef.id);
+      success(t("noteCreated"));
     } catch (err: any) {
       console.error("Error creating note:", err);
-      alert("Failed to create note: " + err.message + "\n\nIf this says 'insufficient permissions', make sure your Firestore database is in Test Mode.");
+      error(`${t("failedCreateNote")}: ${err.message}`);
     }
-  }, [user]);
+  }, [user, success, error, t]);
 
   const deleteNote = async (id: string) => {
-    await deleteDoc(doc(db, "notes", id));
+    try {
+      await deleteDoc(doc(db, "notes", id));
+      success(t("noteDeleted"));
+    } catch (err: any) {
+      console.error("Error deleting note:", err);
+      error(`${t("failedDeleteNote")}: ${err.message}`);
+    }
   };
 
   const togglePin = async (id: string) => {
     const note = notes.find((n) => n.id === id);
     if (!note) return;
-    await updateDoc(doc(db, "notes", id), { pinned: !note.pinned });
+    try {
+      await updateDoc(doc(db, "notes", id), { pinned: !note.pinned });
+      success(note.pinned ? t("noteUnpinned") : t("notePinned"));
+    } catch (err: any) {
+      console.error("Error updating pin state:", err);
+      error(`${t("failedUpdatePin")}: ${err.message}`);
+    }
   };
 
   const updateNote = async (id: string, field: "title" | "content", value: string) => {
@@ -284,12 +315,12 @@ export default function NotesApp() {
       <div className="sticky top-0 z-40 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-            <a href="/" className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors" title="Back to home">
+            <a href="/" className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors" title={t("backToHome")}>
               <ArrowLeft className="w-4 h-4" />
             </a>
             <span className="font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
               <NotebookPen className="w-4 h-4 text-violet-500 shrink-0" />
-              <span className="hidden sm:inline text-base">JongJam Notes</span>
+              <span className="hidden sm:inline text-base">{t("notesAppName")}</span>
             </span>
           </div>
 
@@ -297,7 +328,7 @@ export default function NotesApp() {
             <Search className="w-4 h-4 text-zinc-400 shrink-0" />
             <input
               className="flex-1 min-w-0 bg-transparent text-sm text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 outline-none"
-              placeholder="Search…"
+              placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -309,6 +340,7 @@ export default function NotesApp() {
           </div>
 
           <div className="shrink-0 flex items-center gap-2">
+            <LanguageToggle />
             <ModeToggle />
             <UserMenu />
           </div>
@@ -322,7 +354,7 @@ export default function NotesApp() {
         {loading && (
           <div className="flex items-center justify-center py-20 gap-3 text-zinc-400 dark:text-zinc-600">
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="text-sm">Loading notes…</span>
+            <span className="text-sm">{t("loadingNotes")}</span>
           </div>
         )}
 
@@ -331,7 +363,7 @@ export default function NotesApp() {
             {pinned.length > 0 && (
               <section>
                 <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-3 px-1">
-                  📌 Pinned
+                  📌 {t("pinned")}
                 </p>
                 <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
                   {pinned.map((note) => (
@@ -347,7 +379,7 @@ export default function NotesApp() {
               <section>
                 {pinned.length > 0 && (
                   <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-3 px-1">
-                    Other notes
+                    {t("otherNotes")}
                   </p>
                 )}
                 <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
@@ -366,10 +398,10 @@ export default function NotesApp() {
                   <FileX className="w-8 h-8 text-zinc-400 dark:text-zinc-600" />
                 </div>
                 <p className="text-lg font-semibold text-zinc-500 dark:text-zinc-400">
-                  {search ? "No notes match your search" : "No notes yet"}
+                  {search ? t("noNotesMatch") : t("noNotesYet")}
                 </p>
                 <p className="text-sm text-zinc-400 dark:text-zinc-600">
-                  {search ? "Try a different keyword" : 'Click "Take a note..." above to get started!'}
+                  {search ? t("tryDifferentKeyword") : t("clickTakeNoteAbove")}
                 </p>
               </div>
             )}

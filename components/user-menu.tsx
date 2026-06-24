@@ -20,12 +20,12 @@ export function UserMenu() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="w-8 h-8 rounded-full overflow-hidden border-2 border-zinc-200 dark:border-zinc-700 hover:border-violet-500 dark:hover:border-violet-400 transition-colors"
+        className="w-10 h-10 rounded-full overflow-hidden border-2 border-zinc-200 dark:border-zinc-700 hover:border-violet-500 dark:hover:border-violet-400 transition-colors"
       >
         {user.photoURL ? (
           <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-violet-500 flex items-center justify-center text-white text-xs font-bold">
+          <div className="w-full h-full bg-violet-500 flex items-center justify-center text-white text-sm font-bold">
             {user.email?.[0].toUpperCase() ?? "U"}
           </div>
         )}

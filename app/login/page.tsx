@@ -1,96 +1,130 @@
 "use client";
 
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithPopup, signOut } from "firebase/auth";
+import {
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useLanguage } from "@/components/language-provider";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+
+const GitHubIcon = (props: React.ComponentPropsWithoutRef<"svg">) => (
+  <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
+    <path d="M12.001 2C6.47598 2 2.00098 6.475 2.00098 12C2.00098 16.425 4.86348 20.1625 8.83848 21.4875C9.33848 21.575 9.52598 21.275 9.52598 21.0125C9.52598 20.775 9.51348 19.9875 9.51348 19.15C7.00098 19.6125 6.35098 18.5375 6.15098 17.975C6.03848 17.6875 5.55098 16.8 5.12598 16.5625C4.77598 16.375 4.27598 15.9125 5.11348 15.9C5.90098 15.8875 6.46348 16.625 6.65098 16.925C7.55098 18.4375 8.98848 18.0125 9.56348 17.75C9.65098 17.1 9.91348 16.6625 10.201 16.4125C7.97598 16.1625 5.65098 15.3 5.65098 11.475C5.65098 10.3875 6.03848 9.4875 6.67598 8.7875C6.57598 8.5375 6.22598 7.5125 6.77598 6.1375C6.77598 6.1375 7.61348 5.875 9.52598 7.1625C10.326 6.9375 11.176 6.825 12.026 6.825C12.876 6.825 13.726 6.9375 14.526 7.1625C16.4385 5.8625 17.276 6.1375 17.276 6.1375C17.826 7.5125 17.476 8.5375 17.376 8.7875C18.0135 9.4875 18.401 10.375 18.401 11.475C18.401 15.3125 16.0635 16.1625 13.8385 16.4125C14.201 16.725 14.5135 17.325 14.5135 18.2625C14.5135 19.6 14.501 20.675 14.501 21.0125C14.501 21.275 14.6885 21.5875 15.1885 21.4875C19.259 20.1133 21.9999 16.2963 22.001 12C22.001 6.475 17.526 2 12.001 2Z" />
+  </svg>
+);
+
+const GoogleIcon = (props: React.ComponentPropsWithoutRef<"svg">) => (
+  <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
+    <path d="M3.06364 7.50914C4.70909 4.24092 8.09084 2 12 2C14.6954 2 16.959 2.99095 18.6909 4.60455L15.8227 7.47274C14.7864 6.48185 13.4681 5.97727 12 5.97727C9.39542 5.97727 7.19084 7.73637 6.40455 10.1C6.2045 10.7 6.09086 11.3409 6.09086 12C6.09086 12.6591 6.2045 13.3 6.40455 13.9C7.19084 16.2636 9.39542 18.0227 12 18.0227C13.3454 18.0227 14.4909 17.6682 15.3864 17.0682C16.4454 16.3591 17.15 15.3 17.3818 14.05H12V10.1818H21.4181C21.5364 10.8363 21.6 11.5182 21.6 12.2273C21.6 15.2727 20.5091 17.8363 18.6181 19.5773C16.9636 21.1046 14.7 22 12 22C8.09084 22 4.70909 19.7591 3.06364 16.4909C2.38638 15.1409 2 13.6136 2 12C2 10.3864 2.38638 8.85911 3.06364 7.50914Z" />
+  </svg>
+);
+
+const Logo = (props: React.ComponentPropsWithoutRef<"svg">) => (
+  <svg
+    fill="currentColor"
+    height="48"
+    viewBox="0 0 40 48"
+    width="40"
+    {...props}
+  >
+    <clipPath id="a">
+      <path d="m0 0h40v48h-40z" />
+    </clipPath>
+    <g clipPath="url(#a)">
+      <path d="m25.0887 5.05386-3.933-1.05386-3.3145 12.3696-2.9923-11.16736-3.9331 1.05386 3.233 12.0655-8.05262-8.0526-2.87919 2.8792 8.83271 8.8328-10.99975-2.9474-1.05385625 3.933 12.01860625 3.2204c-.1376-.5935-.2104-1.2119-.2104-1.8473 0-4.4976 3.646-8.1436 8.1437-8.1436 4.4976 0 8.1436 3.646 8.1436 8.1436 0 .6313-.0719 1.2459-.2078 1.8359l10.9227 2.9267 1.0538-3.933-12.0664-3.2332 11.0005-2.9476-1.0539-3.933-12.0659 3.233 8.0526-8.0526-2.8792-2.87916-8.7102 8.71026z" />
+      <path d="m27.8723 26.2214c-.3372 1.4256-1.0491 2.7063-2.0259 3.7324l7.913 7.9131 2.8792-2.8792z" />
+      <path d="m25.7665 30.0366c-.9886 1.0097-2.2379 1.7632-3.6389 2.1515l2.8794 10.746 3.933-1.0539z" />
+      <path d="m21.9807 32.2274c-.65.1671-1.3313.2559-2.0334.2559-.7522 0-1.4806-.102-2.1721-.2929l-2.882 10.7558 3.933 1.0538z" />
+      <path d="m17.6361 32.1507c-1.3796-.4076-2.6067-1.1707-3.5751-2.1833l-7.9325 7.9325 2.87919 2.8792z" />
+      <path d="m13.9956 29.8973c-.9518-1.019-1.6451-2.2826-1.9751-3.6862l-10.95836 2.9363 1.05385 3.933z" />
+    </g>
+  </svg>
+);
 
 export default function LoginPage() {
   const router = useRouter();
+  const { success, error: toastError } = useToast();
+  const { t } = useLanguage();
+
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleGoogleLogin = async () => {
+    if (!auth) {
+      toastError("Firebase is not initialized.");
+      return;
+    }
     setLoading(true);
-    setError("");
     try {
       await signInWithPopup(auth, googleProvider);
+      success(t("welcomeBack") || "Logged in successfully!");
       router.push("/");
     } catch (err: any) {
-      setError("Sign-in failed. Please try again.");
       console.error(err);
+      toastError(t("signInFailed") || err.message || "Failed to sign in");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center px-4">
+    <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950 px-4 relative overflow-hidden">
+      {/* Language Toggle in top right */}
+      <div className="absolute top-4 right-4 z-50">
+        <LanguageToggle />
+      </div>
+
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-violet-400/20 dark:bg-violet-600/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative w-full max-w-sm">
-        {/* Card */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-8 flex flex-col gap-8">
-          {/* Logo */}
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
-              <span className="text-2xl font-black text-white">J</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Welcome to JongJam</h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                Sign in to access your notes and tasks
-              </p>
-            </div>
+      <div className="relative w-full max-w-sm z-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-8 flex flex-col">
+        <div className="sm:mx-auto sm:w-full">
+          <div className="flex items-center space-x-2 justify-center sm:justify-start">
+            <Logo
+              className="h-8 w-8 text-violet-600 dark:text-violet-400"
+              aria-hidden={true}
+            />
+            <p className="font-bold text-xl bg-gradient-to-r from-violet-600 to-blue-500 bg-clip-text text-transparent">
+              {t("appName")}
+            </p>
           </div>
+          <h3 className="mt-6 text-xl font-bold text-zinc-900 dark:text-white text-center sm:text-left">
+            {t("welcomeBack")}
+          </h3>
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 text-center sm:text-left">
+            {t("signInDesc")}
+          </p>
 
-          {/* Features preview */}
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { icon: "📝", label: "Notes", desc: "Write & organize" },
-              { icon: "✅", label: "Tasks", desc: "Track & complete" },
-            ].map((f) => (
-              <div key={f.label} className="bg-zinc-50 dark:bg-zinc-800 rounded-2xl p-3 text-center">
-                <div className="text-xl mb-1">{f.icon}</div>
-                <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">{f.label}</p>
-                <p className="text-[10px] text-zinc-400">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Google sign in */}
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={handleGoogleLogin}
+          <div className="mt-8">
+            <Button
+              variant="outline"
+              type="button"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 font-semibold text-sm text-zinc-800 dark:text-zinc-100 shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-60"
+              className="w-full flex items-center justify-center space-x-2 py-6 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-2xl border-zinc-200 dark:border-zinc-700 shadow-sm hover:shadow-md transition-all duration-200"
+              onClick={handleGoogleLogin}
             >
               {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
+                <Loader2 className="size-5 animate-spin text-zinc-500" />
               ) : (
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
+                <GoogleIcon className="size-5 text-zinc-800 dark:text-zinc-200" aria-hidden={true} />
               )}
-              {loading ? "Signing in…" : "Continue with Google"}
-            </button>
-
-            {error && (
-              <p className="text-xs text-red-500 text-center">{error}</p>
-            )}
-
-            <p className="text-[11px] text-zinc-400 text-center leading-relaxed">
-              By signing in, you agree to our Terms of Service.<br />
-              Your data is stored securely in Firebase.
-            </p>
+              <span className="text-base font-semibold text-zinc-700 dark:text-zinc-300">
+                {loading ? t("signingIn") : t("continueWithGoogle")}
+              </span>
+            </Button>
           </div>
         </div>
       </div>
