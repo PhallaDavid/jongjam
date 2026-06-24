@@ -13,7 +13,9 @@ export function UserMenu() {
   if (!user) return null;
 
   const handleSignOut = () => {
-    signOut(auth);
+    if (auth) {
+      signOut(auth);
+    }
   };
 
   return (

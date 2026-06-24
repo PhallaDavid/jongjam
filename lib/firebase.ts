@@ -18,6 +18,14 @@ const isFirebaseConfigured =
   firebaseConfig.apiKey.length > 0 &&
   firebaseConfig.apiKey !== "undefined";
 
+if (typeof window !== "undefined") {
+  console.log("Firebase Init [Client]:", {
+    isConfigured: isFirebaseConfigured,
+    apiKeyLength: firebaseConfig.apiKey?.length,
+    apiKeyPrefix: firebaseConfig.apiKey ? firebaseConfig.apiKey.substring(0, 6) + "..." : "none",
+  });
+}
+
 const app = isFirebaseConfigured
   ? (getApps().length ? getApp() : initializeApp(firebaseConfig))
   : null;
